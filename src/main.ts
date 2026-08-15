@@ -126,8 +126,8 @@ function render(): void {
   const botCards = session.game.getHand(session.bot);
 
   scoreboard.innerHTML = `
-    ${scoreBlock('You', state.scores[session.human], true)}
-    ${scoreBlock('Bot', state.scores[session.bot], false)}
+    ${scoreBlock('You', true)}
+    ${scoreBlock('Bot', false)}
   `;
 
   botHand.innerHTML = botCards.map(() => renderCard(null, { faceDown: true })).join('');
@@ -137,7 +137,7 @@ function render(): void {
       : session.game.currentPlayer() === session.bot
         ? 'thinking…'
         : 'waiting';
-  botReason.textContent = session.lastDecision?.reason ?? 'A decision tree. Not a model.';
+  botReason.textContent = '';
 
   playerHand.innerHTML = humanHand
     .map((card) =>
@@ -179,7 +179,7 @@ function render(): void {
 
   if (session.displayTrick) {
     const youWon = session.displayTrick.winner === session.human;
-    trickCaption.textContent = `${youWon ? 'You' : 'Bot'} take${youWon ? '' : 's'} ${session.displayTrick.points} point${session.displayTrick.points === 1 ? '' : 's'}.`;
+    trickCaption.textContent = `${youWon ? 'You take' : 'Bot takes'} the trick.`;
   } else if (state.phase === 'playing' && shown.length === 0) {
     const leader = state.leader === session.human ? 'You lead.' : 'Bot leads.';
     trickCaption.textContent = leader;
@@ -193,7 +193,7 @@ function render(): void {
       const number = state.history.length - index;
       const youWon = trickRecord.winner === session.human;
       const cards = trickRecord.plays.map((play) => formatCard(play.card)).join(' · ');
-      return `<li class="${youWon ? 'you-won' : ''}">#${number} ${youWon ? 'You' : 'Bot'} +${trickRecord.points} — ${cards}</li>`;
+      return `<li class="${youWon ? 'you-won' : ''}">#${number} ${youWon ? 'You' : 'Bot'} — ${cards}</li>`;
     })
     .join('');
 
@@ -208,8 +208,8 @@ function render(): void {
   }
 }
 
-function scoreBlock(label: string, points: number, you: boolean): string {
-  return `<div class="score ${you ? 'you' : ''}"><span class="who">${label}</span><span class="pts">${points}</span></div>`;
+function scoreBlock(label: string, you: boolean): string {
+  return `<div class="score ${you ? 'you' : ''}"><span class="who">${label}</span></div>`;
 }
 
 function el(selector: string): HTMLElement {

@@ -108,10 +108,8 @@ button {
   opacity: 0.7;
 }
 
-.score .pts {
-  font-family: Fraunces, Georgia, serif;
-  font-size: 1.55rem;
-  line-height: 1.1;
+.reason {
+  min-height: 0;
 }
 
 .score.you {
