@@ -112,6 +112,7 @@ async function startHost(): Promise<void> {
 
   try {
     hosting = await hostMesa(code);
+    lobbyStatus.textContent = 'Mesa abierta. Manda el enlace y espera.';
     mesa = await hosting.whenGuest;
   } catch {
     if (ticket !== joinTicket) return;

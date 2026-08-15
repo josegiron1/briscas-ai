@@ -1,7 +1,7 @@
-import { Peer, type DataConnection } from 'peerjs';
+import { joinRoom } from 'trystero';
 import type { WireMessage } from './protocol';
 
-const PREFIX = 'briscas-mesa-';
+const APP_ID = 'briscas-oro-copa-espada-basto';
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 export function randomCode(): string {
@@ -35,95 +35,100 @@ export interface Hosting {
   destroy: () => void;
 }
 
-function bind(conn: DataConnection, peer: Peer, code: string): Mesa {
+function openRoom(code: string) {
+  return joinRoom(
+    {
+      appId: APP_ID,
+      password: code,
+    },
+    `briscas-${code}`,
+  );
+}
+
+function bindMesa(code: string, room: ReturnType<typeof openRoom>, peerId: string): Mesa {
+  const wire = room.makeAction('wire');
   const messageHandlers: Array<(message: WireMessage) => void> = [];
+  const queued: WireMessage[] = [];
   const closeHandlers: Array<() => void> = [];
 
-  conn.on('data', (data) => {
-    if (!data || typeof data !== 'object') return;
-    const message = data as WireMessage;
-    if (!message.type) return;
+  wire.onMessage = (raw) => {
+    const message = raw as WireMessage;
+    if (!message || typeof message !== 'object' || !message.type) return;
+    if (messageHandlers.length === 0) {
+      queued.push(message);
+      return;
+    }
     for (const handler of messageHandlers) handler(message);
-  });
+  };
 
-  const closed = (): void => {
+  room.onPeerLeave = (left) => {
+    if (left !== peerId) return;
     for (const handler of closeHandlers) handler();
   };
-  conn.on('close', closed);
-  conn.on('error', closed);
 
   return {
     code,
     send(message) {
-      if (conn.open) conn.send(message);
+      void wire.send(message as never, { target: peerId });
     },
     onMessage(handler) {
       messageHandlers.push(handler);
+      while (queued.length > 0) {
+        const next = queued.shift();
+        if (next) handler(next);
+      }
     },
     onClose(handler) {
       closeHandlers.push(handler);
     },
     destroy() {
-      conn.close();
-      peer.destroy();
+      room.leave();
     },
   };
 }
 
-export function hostMesa(code: string): Promise<Hosting> {
-  return new Promise((resolve, reject) => {
-    const peer = new Peer(`${PREFIX}${code}`);
-    const timer = window.setTimeout(() => {
-      peer.destroy();
-      reject(new Error('No se pudo abrir la mesa.'));
-    }, 8000);
+export async function hostMesa(code: string): Promise<Hosting> {
+  const room = openRoom(code);
+  let taken = false;
 
-    peer.on('error', (error) => {
-      window.clearTimeout(timer);
-      peer.destroy();
-      reject(error);
-    });
-
-    peer.on('open', () => {
-      window.clearTimeout(timer);
-      const whenGuest = new Promise<Mesa>((guestResolve) => {
-        peer.on('connection', (conn) => {
-          conn.on('open', () => guestResolve(bind(conn, peer, code)));
-        });
-      });
-      resolve({
-        code,
-        whenGuest,
-        destroy() {
-          peer.destroy();
-        },
-      });
-    });
+  const whenGuest = new Promise<Mesa>((resolve) => {
+    room.onPeerJoin = (peerId) => {
+      if (taken) return;
+      taken = true;
+      resolve(bindMesa(code, room, peerId));
+    };
   });
+
+  return {
+    code,
+    whenGuest,
+    destroy() {
+      room.leave();
+    },
+  };
 }
 
 export function joinMesa(code: string): Promise<Mesa> {
   return new Promise((resolve, reject) => {
-    const peer = new Peer();
-    const timer = window.setTimeout(() => {
-      peer.destroy();
-      reject(new Error('No se encontró esa mesa.'));
-    }, 14000);
+    const room = openRoom(code);
+    let settled = false;
 
-    const fail = (error: unknown): void => {
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      room.leave();
+      reject(new Error('No se encontró esa mesa.'));
+    }, 25000);
+
+    room.onPeerJoin = (peerId) => {
+      if (settled) return;
+      settled = true;
       window.clearTimeout(timer);
-      peer.destroy();
-      reject(error);
+      resolve(bindMesa(code, room, peerId));
     };
 
-    peer.on('error', fail);
-    peer.on('open', () => {
-      const conn = peer.connect(`${PREFIX}${code}`, { reliable: true });
-      conn.on('error', fail);
-      conn.on('open', () => {
-        window.clearTimeout(timer);
-        resolve(bind(conn, peer, code));
-      });
-    });
+    room.onPeerLeave = () => {
+      /* host may bounce once while connecting */
+    };
   });
 }

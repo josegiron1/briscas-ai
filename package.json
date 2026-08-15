@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "brisca-engine": "^1.0.0",
-    "peerjs": "^1.5.5"
+    "trystero": "^0.25.3"
   },
   "devDependencies": {
     "tsx": "^4.20.5",
