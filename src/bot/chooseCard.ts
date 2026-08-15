@@ -70,9 +70,12 @@ function chooseFollow(view: PlayerView): Decision {
     }
 
     const dump = minBy(nonWinners, (card) => sacrificeCost(card, view.trumpSuit));
+    const spentTrump = cheapest.suit === view.trumpSuit;
     return {
       card: dump,
-      reason: `Not worth spending ${formatCard(cheapest)} on ${points} point${points === 1 ? '' : 's'} — dump ${formatCard(dump)}.`,
+      reason: spentTrump && points === 0
+        ? `Empty trick — dump ${formatCard(dump)} instead of spending vida.`
+        : `Not worth spending ${formatCard(cheapest)} on ${points} point${points === 1 ? '' : 's'} — dump ${formatCard(dump)}.`,
       rule: 'follow.decline-waste',
     };
   }
@@ -157,12 +160,16 @@ function shouldTake(
   playersAfter: number,
 ): boolean {
   const precious = isPrecious(cheapest, view.trumpSuit);
+  const usingTrump = cheapest.suit === view.trumpSuit;
 
   if (playersAfter > 0) {
     if (points >= 10) return true;
-    if (!precious && points >= 2) return true;
+    if (!usingTrump && !precious && points >= 2) return true;
     return false;
   }
+
+  // Never spend vida on a valueless trick if you can dump a 5, 6, 2, etc.
+  if (usingTrump && points === 0) return false;
 
   if (!precious) return true;
   if (points >= 10) return true;

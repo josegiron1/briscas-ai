@@ -94,6 +94,38 @@ describe('chooseFollow', () => {
     expect(decision.rule).toBe('follow.take-empty');
   });
 
+  it('dumps a worthless side card instead of trumping an empty trick', () => {
+    const decision = chooseCard(
+      view({
+        trumpSuit: 'copas',
+        currentTrick: [{ player: 0, card: { suit: 'espadas', rank: 2 } }],
+        hand: [
+          { suit: 'oros', rank: 6 },
+          { suit: 'bastos', rank: 5 },
+          { suit: 'copas', rank: 4 },
+        ],
+      }),
+    );
+    expect(decision.card).toEqual({ suit: 'bastos', rank: 5 });
+    expect(decision.rule).toBe('follow.decline-waste');
+  });
+
+  it('does trump when the trick has a 1', () => {
+    const decision = chooseCard(
+      view({
+        trumpSuit: 'copas',
+        currentTrick: [{ player: 0, card: { suit: 'oros', rank: 1 } }],
+        hand: [
+          { suit: 'oros', rank: 6 },
+          { suit: 'bastos', rank: 5 },
+          { suit: 'copas', rank: 4 },
+        ],
+      }),
+    );
+    expect(decision.card).toEqual({ suit: 'copas', rank: 4 });
+    expect(decision.rule).toBe('follow.take-points');
+  });
+
   it('takes a 0-point trick with a cheap non-life card to keep the lead', () => {
     const decision = chooseCard(
       view({
