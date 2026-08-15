@@ -1,0 +1,24 @@
+{
+  "name": "briscas-ai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Play Brisca against a decision-tree bot built on brisca-engine.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "simulate": "tsx src/simulate.ts"
+  },
+  "dependencies": {
+    "brisca-engine": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
+  }
+}
