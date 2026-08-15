@@ -167,7 +167,7 @@ function render(): void {
   deck.innerHTML =
     state.drawQueue.length === 0
       ? `<p class="suit-chip">Empty</p>`
-      : `${renderCard(null, { faceDown: true })}<span class="deck-count">${state.drawQueue.length}</span>`;
+      : `${renderCard(null, { faceDown: true, stacked: true })}<span class="deck-count">${state.drawQueue.length}</span>`;
 
   const shown = session.displayTrick?.plays ?? state.currentTrick;
   trick.innerHTML = shown
