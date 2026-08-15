@@ -9,9 +9,9 @@ export class Session {
   lastDecision: Decision | null = null;
   displayTrick: TrickRecord | null = null;
 
-  constructor() {
+  constructor(seats?: { human: number }) {
     this.game = new BriscaGame(2);
-    this.human = Math.random() < 0.5 ? 0 : 1;
+    this.human = seats?.human ?? (Math.random() < 0.5 ? 0 : 1);
     this.bot = 1 - this.human;
   }
 
@@ -30,13 +30,17 @@ export class Session {
     return decision;
   }
 
-  humanExchange(): boolean {
+  exchangeFor(player: number): boolean {
     try {
-      exchangeTrump(this.game, this.human);
+      exchangeTrump(this.game, player);
       return true;
     } catch {
       return false;
     }
+  }
+
+  humanExchange(): boolean {
+    return this.exchangeFor(this.human);
   }
 
   play(player: number, card: Card): boolean {

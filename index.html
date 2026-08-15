@@ -38,7 +38,27 @@
       </defs>
     </svg>
 
-    <div id="app">
+    <div id="lobby">
+      <div class="lobby-card">
+        <p class="eyebrow">Oro · Copa · Espada · Basto</p>
+        <h1>Briscas</h1>
+        <p class="lobby-lead">Juega solo contra el bot, o manda un enlace y siéntate con alguien.</p>
+        <div class="lobby-actions" id="lobby-home">
+          <button type="button" class="primary" id="play-solo">Jugar solo</button>
+          <button type="button" class="ghost" id="create-room">Crear mesa</button>
+        </div>
+        <div class="lobby-wait" id="lobby-wait" hidden>
+          <p class="lobby-code-label">Código de la mesa</p>
+          <p class="lobby-code" id="room-code"></p>
+          <button type="button" class="primary" id="copy-link">Copiar enlace</button>
+          <p class="lobby-status" id="lobby-status">Esperando al otro…</p>
+          <button type="button" class="ghost" id="cancel-room">Cancelar</button>
+        </div>
+        <p class="lobby-error" id="lobby-error" hidden></p>
+      </div>
+    </div>
+
+    <div id="app" hidden>
       <header class="topbar">
         <div class="brand">
           <p class="eyebrow">Oro · Copa · Espada · Basto</p>
@@ -46,8 +66,9 @@
         </div>
         <div class="scoreboard" id="scoreboard"></div>
         <div class="actions">
-          <button type="button" class="ghost" id="rules-btn">How it plays</button>
-          <button type="button" class="primary" id="new-game">New game</button>
+          <button type="button" class="ghost" id="rules-btn">Cómo se juega</button>
+          <button type="button" class="ghost" id="leave-table">Salir</button>
+          <button type="button" class="primary" id="new-game">Nueva</button>
         </div>
       </header>
 
@@ -55,7 +76,7 @@
         <div class="table">
         <section class="seat bot-seat">
           <div class="seat-meta">
-            <span class="name">Bot</span>
+            <span class="name" id="opp-name">Bot</span>
             <span class="chip" id="bot-chip"></span>
           </div>
           <div class="hand" id="bot-hand"></div>

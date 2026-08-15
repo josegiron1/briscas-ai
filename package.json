@@ -13,7 +13,8 @@
     "simulate": "tsx src/simulate.ts"
   },
   "dependencies": {
-    "brisca-engine": "^1.0.0"
+    "brisca-engine": "^1.0.0",
+    "peerjs": "^1.5.5"
   },
   "devDependencies": {
     "tsx": "^4.20.5",
